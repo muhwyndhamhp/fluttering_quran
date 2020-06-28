@@ -18,7 +18,7 @@ class DatabaseHelper {
   static final _databaseName = 'quranFlutter.db';
   static final _databaseVersion = 1;
 
-  static final setLimit = 40;
+  static final setLimit = 100;
 
   Future<Database> get database async {
     if (_database != null) return _database;
@@ -64,21 +64,32 @@ class DatabaseHelper {
   }
 
   Future<List<Verse>> getVersesStartFrom(int suraID, int verseID) async {
+    var a = suraID;
     var db = await instance.database;
     var queryResults = await db.query(verseTable,
         where: 'suraID = ?',
         whereArgs: [suraID],
         orderBy: 'verseID ASC',
-        offset: verseID,
+        offset: verseID - 1,
         limit: setLimit);
     var result = queryResults.map((e) => Verse.fromMap(e)).toList();
-    while (result.length < 20 && suraID <= 114) {
+    while (result.length < setLimit && a <= 114) {
       var queryResults2 = await db.query(verseTable,
           where: 'suraID = ?',
-          whereArgs: [suraID++],
+          whereArgs: [++a],
           orderBy: 'verseID ASC',
           limit: setLimit - result.length);
-      result += queryResults2.map((e) => Verse.fromMap(e)).toList();
+      var tempResult = queryResults2.map((e) => Verse.fromMap(e)).toList();
+
+      result += [
+        Verse(
+          suraID: tempResult.first.suraID,
+          verseID: 0,
+          suraName: tempResult.first.suraName,
+          body: '',
+        )
+      ];
+      result += tempResult;
     }
     return result;
   }

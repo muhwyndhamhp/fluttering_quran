@@ -13,7 +13,8 @@ class VerseService with ChangeNotifier {
 
   void getVerseStartFrom(int suraID, int verseID) async {
     final dbHelper = DatabaseHelper.instance;
-    verseList = await dbHelper.getVersesStartFrom(suraID, verseID);
+
+    verseList += await dbHelper.getVersesStartFrom(suraID, verseID);
     notifyListeners();
   }
 }
