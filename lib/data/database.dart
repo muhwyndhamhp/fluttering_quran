@@ -18,7 +18,7 @@ class DatabaseHelper {
   static final _databaseName = 'quranFlutter.db';
   static final _databaseVersion = 1;
 
-  static final setLimit = 100;
+  static final setLimit = 200;
 
   Future<Database> get database async {
     if (_database != null) return _database;
