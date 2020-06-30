@@ -16,6 +16,15 @@ class Tajweed {
         rule: map['rule']);
   }
 
+  factory Tajweed.fromMap(Map<String, dynamic> map) {
+    return Tajweed(
+        suraID: map['suraID'],
+        verseID: map['verseID'],
+        start: map['start'],
+        end: map['end'],
+        rule: map['rule']);
+  }
+
   Map<String, dynamic> toMap() {
     return {
       'suraID': suraID,

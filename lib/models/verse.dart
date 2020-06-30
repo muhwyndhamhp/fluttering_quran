@@ -1,3 +1,5 @@
+import 'package:quran_flutter/models/tajweed.dart';
+
 class Verse {
   Verse(
       {this.suraID,
@@ -5,7 +7,8 @@ class Verse {
       this.suraName,
       this.body,
       this.translationEN,
-      this.translationID});
+      this.translationID,
+      this.tajweedList});
 
   int suraID;
   int verseID;
@@ -13,6 +16,7 @@ class Verse {
   String body;
   String translationEN = '';
   String translationID = '';
+  List<Tajweed> tajweedList = <Tajweed>[];
 
   factory Verse.fromMap(Map<String, dynamic> map) => Verse(
       suraID: map['suraID'],

@@ -3,6 +3,7 @@ import 'dart:typed_data';
 
 import 'package:flutter/services.dart';
 import 'package:path/path.dart';
+import 'package:quran_flutter/models/tajweed.dart';
 import 'package:quran_flutter/models/verse.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite/sqflite.dart';
@@ -18,7 +19,7 @@ class DatabaseHelper {
   static final _databaseName = 'quranFlutter.db';
   static final _databaseVersion = 1;
 
-  static final setLimit = 200;
+  static final setLimit = 400;
 
   Future<Database> get database async {
     if (_database != null) return _database;
@@ -53,14 +54,34 @@ class DatabaseHelper {
   Future<List<Verse>> getAllVerse() async {
     var db = await instance.database;
     var queryResults = await db.query(verseTable);
-    return queryResults.map((e) => Verse.fromMap(e)).toList();
+    var verseList = queryResults.map((e) => Verse.fromMap(e)).toList();
+
+    for (var verse in verseList) {
+      var tajweedQuery = await db.query(tajweedTable,
+          where: 'suraID = ? AND verseID = ?',
+          whereArgs: [verse.suraID, verse.verseID],
+          orderBy: 'start ASC');
+      verse.tajweedList = tajweedQuery.map((e) => Tajweed.fromMap(e)).toList();
+    }
+
+    return verseList;
   }
 
   Future<List<Verse>> getVerseBySura(int suraID) async {
     var db = await instance.database;
     var queryResults = await db.query(verseTable,
         where: 'suraID = ?', whereArgs: [suraID], orderBy: 'verseID ASC');
-    return queryResults.map((e) => Verse.fromMap(e)).toList();
+    var verseList = queryResults.map((e) => Verse.fromMap(e)).toList();
+
+    for (var verse in verseList) {
+      var tajweedQuery = await db.query(tajweedTable,
+          where: 'suraID = ? AND verseID = ?',
+          whereArgs: [verse.suraID, verse.verseID],
+          orderBy: 'start ASC');
+      verse.tajweedList = tajweedQuery.map((e) => Tajweed.fromMap(e)).toList();
+    }
+
+    return verseList;
   }
 
   Future<List<Verse>> getVersesStartFrom(int suraID, int verseID) async {
@@ -90,6 +111,14 @@ class DatabaseHelper {
         )
       ];
       result += tempResult;
+    }
+
+    for (var verse in result) {
+      var tajweedQuery = await db.query(tajweedTable,
+          where: 'suraID = ? AND verseID = ?',
+          whereArgs: [verse.suraID, verse.verseID],
+          orderBy: 'start ASC');
+      verse.tajweedList = tajweedQuery.map((e) => Tajweed.fromMap(e)).toList();
     }
     return result;
   }

@@ -1,0 +1,15 @@
+var tajweedVariations = [
+  "ghunnah",
+  "hamzat_wasl",
+  "idghaam_ghunnah",
+  "idghaam_no_ghunnah",
+  "idghaam_mutajanisayn",
+  "idghaam_shafawi",
+  "ikhfa",
+  "ikhfa_shafawi",
+  "iqlab",
+  "lam_shamsiyyah",
+  "madd",
+  "qalqalah",
+  "silent",
+];

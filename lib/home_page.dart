@@ -25,9 +25,17 @@ class HomePageState extends State<HomePage> {
     var verseService = Provider.of<VerseService>(context);
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
       try {
-        scrollController.jumpTo(index: verseService.scrollIndex - 1);
+        if (scrollController != null && verseService.scrollIndex > 1)
+          scrollController.jumpTo(index: verseService.scrollIndex - 1);
       } catch (e) {}
     });
+
+    try {
+      if (scrollController != null && verseService.scrollIndex > 1)
+        verseService.addListener(() {
+          scrollController.jumpTo(index: verseService.scrollIndex - 1);
+        });
+    } catch (e) {}
     return Scaffold(
       appBar: AppBar(
         title: Text('Fluttering Quran'),
@@ -37,7 +45,19 @@ class HomePageState extends State<HomePage> {
           builder: (context, verseService, child) {
             if (verseService.verseList.isEmpty) {
               verseService.getOnStartVerseList();
-              return Text('DAFTAR KOSONG!');
+              return Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: <Widget>[
+                  Text('Memuat Quran'),
+                  Container(
+                    padding: EdgeInsets.fromLTRB(0, 20, 0, 0),
+                    width: 300,
+                    child: LinearProgressIndicator(
+                        backgroundColor: Colors.lightBlue),
+                  )
+                ],
+              );
             } else {
               return NotificationListener(
                 // ignore: missing_return
@@ -46,10 +66,9 @@ class HomePageState extends State<HomePage> {
                   /// before reaching bottom most of the ListView, we shall call
                   /// verseService.getVerseStartFrom()
                   if (scrollInfo.metrics.pixels >=
-                      scrollInfo.metrics.maxScrollExtent - 200)
-                    verseService.getVerseStartFrom(
-                        verseService.verseList.last.suraID,
-                        verseService.verseList.last.verseID + 1);
+                      scrollInfo.metrics.maxScrollExtent)
+                    verseService.getVerseAfterStartFrom(
+                        verseService.verseList.last.suraID);
 
                   ///This one for listening to the top most ayah on screen,
                   ///used for remembering the last state of the screen, allowing
@@ -63,6 +82,12 @@ class HomePageState extends State<HomePage> {
                           "scrollling to ${currentVerse.suraName} ayah ${currentVerse.verseID}");
                       verseService.saveLastReadState(
                           currentVerse.suraID, currentVerse.verseID);
+                      if (currentVerse.verseID <=
+                              verseService.verseList[1].verseID &&
+                          currentVerse.suraID ==
+                              verseService.verseList[1].suraID)
+                        verseService.getVerseBeforeStartFrom(
+                            currentVerse.suraID, currentVerse.verseID);
                     });
                   }
                 },
@@ -70,10 +95,6 @@ class HomePageState extends State<HomePage> {
                   itemScrollController: scrollController,
                   itemCount: verseService.verseList.length,
                   itemBuilder: (BuildContext context, int index) {
-                    if (index == verseService.verseList.length - 1) {
-                      scrollController.jumpTo(
-                          index: verseService.scrollIndex - 1);
-                    }
                     return _listViewItemBuilder(verseService.verseList[index]);
                   },
                 ),
@@ -125,7 +146,7 @@ class HomePageState extends State<HomePage> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
             Container(
-              padding: EdgeInsets.fromLTRB(20, 0, 0, 0),
+              padding: EdgeInsets.fromLTRB(30, 0, 0, 0),
               child: Text(
                 verse.body,
                 textAlign: TextAlign.end,
@@ -133,6 +154,7 @@ class HomePageState extends State<HomePage> {
               ),
             ),
             Text(verse.translationID.replaceAll("\\", "")),
+            Text(verse.tajweedList[0].rule)
           ],
         ),
       ));

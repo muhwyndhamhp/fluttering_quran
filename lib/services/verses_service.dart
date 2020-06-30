@@ -31,21 +31,36 @@ class VerseService with ChangeNotifier {
     delayedScrollCall(verseID);
   }
 
-  void getVerseStartFrom(int suraID, int verseID) async {
+  void getVerseAfterStartFrom(int suraID) async {
     final dbHelper = DatabaseHelper.instance;
 
-    verseList += await dbHelper.getVersesStartFrom(suraID, verseID);
+    var lastIndex = verseList.length - 1;
+
+    verseList += await dbHelper.getVerseBySura(suraID + 1);
+
+    delayedScrollCall(lastIndex);
 
     notifyListeners();
+  }
+
+  void getVerseBeforeStartFrom(int currentSuraID, int currentVerseID) async {
+    if (currentSuraID > 1) {
+      final dbHelper = DatabaseHelper.instance;
+
+      var prevVerseList = await dbHelper.getVerseBySura(currentSuraID - 1);
+      var tempVerseLit = verseList.map((e) => e).toList();
+      verseList = prevVerseList;
+      verseList += tempVerseLit;
+
+      delayedScrollCall(prevVerseList.length + currentVerseID);
+
+      notifyListeners();
+    }
   }
 
   void delayedScrollCall(int scrollPosition) async {
     scrollIndex = scrollPosition;
     notifyListeners();
-    // Future.delayed(const Duration(milliseconds: 500), () {
-    //   scrollIndex = scrollPosition;
-    //   notifyListeners();
-    // });
   }
 
   void saveLastReadState(int suraID, int verseID) async {
